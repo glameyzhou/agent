@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.glamey.example.agent</groupId>
+    <artifactId>agent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.12.1.GA</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <finalName>myAgent</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <archive>
+                        <index>true</index>
+                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+                        <manifest>
+                            <addDefaultImplementationEntries/>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!--
+                    1. 支持两种操作include和exclude
+                    2. 配置格式：groupId:artifactId[[:type]:classifier]，至少包含groupid和artifactid，type和类名可选
+                    3. 支持’*’ 和 ‘?’执行通配符匹配
+                    -->
+                    <artifactSet>
+                        <includes>
+                            <include>javassist:javassist:jar:</include>
+                            <include>net.bytebuddy:byte-buddy:jar:</include>
+                            <include>net.bytebuddy:byte-buddy-agent:jar:</include>
+                        </includes>
+                    </artifactSet>
+
+                    <!--  类重定位  避免将当前的shade jar提供给三方使用后，引起冲突，可以将一些方法包重命名-->
+                    <!--<relocations>
+                        <relocations>
+                            <relocation>
+                                <pattern>org.codehaus.plexus.util</pattern>
+                                <shadedPattern>org.shaded.plexus.util</shadedPattern>
+                                <excludes>
+                                    <exclude>org.codehaus.plexus.util.xml.Xpp3Dom</exclude>
+                                    <exclude>org.codehaus.plexus.util.xml.pull.*</exclude>
+                                </excludes>
+                            </relocation>
+                        </relocations>
+                    </relocations>-->
+
+                    <!--  生成可执行的jar-->
+                    <!--<transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>Main</mainClass>
+                        </transformer>
+                    </transformers>-->
+                </configuration>
+            </plugin>
+
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>
